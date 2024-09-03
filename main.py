@@ -31,8 +31,9 @@ def get_random_upgrade(player):
         MagnetBoost("Magnet Boost", 1)
     ]
     return random.sample([u for u in all_upgrades if not any(w.name == u.name for w in player.weapons + player.powerups)], 3)
-def spawn_enemy(enemies):
-    new_enemy = Enemy()
+def spawn_enemy(enemies, game_time):
+    base_hp = 1 + int(game_time / 60)  # Increase HP every minute
+    new_enemy = Enemy(base_hp)
     collision = True
     attempts = 0
     while collision and attempts < 100:
@@ -56,6 +57,7 @@ def main():
     gems = pygame.sprite.Group()
     ui = UI()
     
+    game_time = 0
     spawn_timer = 0
 
     running = True
@@ -64,9 +66,6 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.USEREVENT + 1:
-                for enemy in enemies:
-                    enemy.reset_color()
             if leveling_up and event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_1, pygame.K_2, pygame.K_3):
                     choice = event.key - pygame.K_1
@@ -83,10 +82,12 @@ def main():
             dy = keys[pygame.K_DOWN] - keys[pygame.K_UP]
             player.move(dx, dy)
 
+            game_time += 1 / 60  # Assuming 60 FPS
+
             # Spawn enemies
             spawn_timer += 1
-            if spawn_timer >= 60:  # Spawn every second
-                spawn_enemy(enemies)
+            if spawn_timer >= 60:
+                spawn_enemy(enemies, game_time)
                 spawn_timer = 0
 
             # Update weapon attacks
@@ -94,7 +95,7 @@ def main():
                 if isinstance(weapon, Garlic):
                     weapon.attack(player.rect.centerx, player.rect.centery, projectiles, enemies)
                 else:
-                    weapon.attack(player.rect.centerx, player.rect.centery, projectiles, (dx, dy))
+                    weapon.attack(player.rect.centerx, player.rect.centery, projectiles, player)
 
             # Update
             enemies.update(player, enemies)

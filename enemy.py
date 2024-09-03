@@ -1,20 +1,21 @@
 import pygame
 import random
 import math
-
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, base_hp):
         super().__init__()
         self.image = pygame.Surface((20, 20))
-        self.image.fill((255, 0, 0))
+        self.color = (255, 0, 0)
+        self.image.fill(self.color)
         self.rect = self.image.get_rect()
         screen = pygame.display.get_surface()
         self.rect.x = random.randint(0, screen.get_width() - self.rect.width)
         self.rect.y = random.choice([0, screen.get_height() - self.rect.height])
         self.speed = random.uniform(0.5, 2)
-        self.hp = 10
+        self.hp = base_hp
         self.position = pygame.math.Vector2(self.rect.center)
-
+        self.hit_timer = 0
+        self.hit_duration = 5
     def update(self, player, enemies):
         # Move towards player
         direction = pygame.math.Vector2(player.rect.center) - self.position
@@ -41,16 +42,18 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.clamp_ip(screen_rect)
         self.position = pygame.math.Vector2(self.rect.center)
 
+        # Handle color reset
+        if self.hit_timer > 0:
+            self.hit_timer -= 1
+            if self.hit_timer == 0:
+                self.image.fill(self.color)  # Reset to original color
+
     def take_damage(self, amount):
         self.hp -= amount
+        self.image.fill((255, 255, 255))  # Change color to white when hit
+        self.hit_timer = self.hit_duration
         if self.hp <= 0:
             self.kill()
-        else:
-            # Visual feedback for damage
-            original_color = self.image.get_at((0, 0))
-            self.image.fill((255, 100, 100))  # Flash red
-            pygame.time.set_timer(pygame.USEREVENT, 100)  # Reset color after 100ms
-            pygame.time.set_timer(pygame.USEREVENT + 1, 100)  # Custom event to reset color
 
     def reset_color(self):
-        self.image.fill((255, 0, 0))  # Reset to original red color            pygame.time.set_timer(pygame.USEREVENT, 100)  # Reset color after 100ms            self.kill()
+        pass  # This method is no longer needed        self.image.fill((255, 0, 0))  # Reset to original red color            pygame.time.set_timer(pygame.USEREVENT, 100)  # Reset color after 100ms            self.kill()

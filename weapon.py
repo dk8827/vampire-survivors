@@ -36,12 +36,8 @@ class Knife(Weapon):
             self.amount += 1  # Increase amount every 2 levels
         self.cooldown = max(30, self.cooldown - 10)  # Decrease cooldown, minimum 30
 
-    def _perform_attack(self, x, y, projectiles, player_direction):
-        dx, dy = player_direction
-        direction = pygame.math.Vector2(dx, dy)
-        if direction.length() == 0:
-            direction = pygame.math.Vector2(1, 0)
-        direction = direction.normalize()
+    def _perform_attack(self, x, y, projectiles, player):
+        direction = player.last_direction
 
         for i in range(self.amount):
             offset = i * 10

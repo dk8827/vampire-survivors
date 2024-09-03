@@ -15,12 +15,14 @@ class Player(pygame.sprite.Sprite):
         self.powerups = []
         self.max_hp = 100
         self.hp = self.max_hp
+        self.last_direction = pygame.math.Vector2(1, 0)  # Default to right
 
     def move(self, dx, dy):
         self.rect.x += dx * self.speed
         self.rect.y += dy * self.speed
         self.rect.clamp_ip(pygame.display.get_surface().get_rect())
-
+        if dx != 0 or dy != 0:
+            self.last_direction = pygame.math.Vector2(dx, dy).normalize()
     def level_up(self):
         self.level += 1
         self.speed += 0.2
