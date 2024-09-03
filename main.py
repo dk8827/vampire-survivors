@@ -31,6 +31,22 @@ def get_random_upgrade(player):
         MagnetBoost("Magnet Boost", 1)
     ]
     return random.sample([u for u in all_upgrades if not any(w.name == u.name for w in player.weapons + player.powerups)], 3)
+def spawn_enemy(enemies):
+    new_enemy = Enemy()
+    collision = True
+    attempts = 0
+    while collision and attempts < 100:
+        collision = False
+        for enemy in enemies:
+            if new_enemy.rect.colliderect(enemy.rect):
+                collision = True
+                new_enemy.rect.x = random.randint(0, WIDTH - new_enemy.rect.width)
+                new_enemy.rect.y = random.choice([0, HEIGHT - new_enemy.rect.height])
+                new_enemy.position = pygame.math.Vector2(new_enemy.rect.center)
+                break
+        attempts += 1
+    if not collision:
+        enemies.add(new_enemy)
 
 def main():
     clock = pygame.time.Clock()
@@ -41,8 +57,6 @@ def main():
     ui = UI()
     
     spawn_timer = 0
-    shoot_timer = 0
-    damage_cooldown = 0
 
     running = True
     leveling_up = False
@@ -50,6 +64,9 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.USEREVENT + 1:
+                for enemy in enemies:
+                    enemy.reset_color()
             if leveling_up and event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_1, pygame.K_2, pygame.K_3):
                     choice = event.key - pygame.K_1
@@ -59,7 +76,6 @@ def main():
                     else:
                         player.add_powerup(upgrade)
                     leveling_up = False
-
         if not leveling_up:
             # Player movement
             keys = pygame.key.get_pressed()
@@ -70,38 +86,33 @@ def main():
             # Spawn enemies
             spawn_timer += 1
             if spawn_timer >= 60:  # Spawn every second
-                enemies.add(Enemy())
+                spawn_enemy(enemies)
                 spawn_timer = 0
 
-            # Auto-attack
-            shoot_timer += 1
-            if shoot_timer >= 30:  # Attack every half second
-                for weapon in player.weapons:
-                    if isinstance(weapon, Garlic):
-                        # Damage enemies within Garlic's radius
-                        for enemy in enemies:
-                            if pygame.math.Vector2(player.rect.center).distance_to(enemy.rect.center) <= weapon.radius:
-                                enemy.take_damage(weapon.damage)
-                    else:
-                        weapon.attack(player.rect.centerx, player.rect.centery, projectiles)
-                shoot_timer = 0
+            # Weapon attacks
+            for weapon in player.weapons:
+                if isinstance(weapon, Garlic):
+                    weapon.attack(player.rect.centerx, player.rect.centery, projectiles, enemies)
+                else:
+                    weapon.attack(player.rect.centerx, player.rect.centery, projectiles)
 
             # Update
-            enemies.update(player)
+            enemies.update(player, enemies)
             projectiles.update()
 
             # Collision detection
-            for enemy in pygame.sprite.groupcollide(enemies, projectiles, True, True):
-                if random.random() < 0.3:  # 30% chance to drop a gem
-                    gems.add(Gem(enemy.rect.centerx, enemy.rect.centery))
+            for enemy in pygame.sprite.groupcollide(enemies, projectiles, False, True):
+                enemy.take_damage(1)  # Assume each projectile deals 1 damage
+                if enemy.hp <= 0:
+                    if random.random() < 0.3:  # 30% chance to drop a gem
+                        gems.add(Gem(enemy.rect.centerx, enemy.rect.centery))
+                    enemy.kill()
 
-            # Player-enemy collision
-            if damage_cooldown == 0:
-                for enemy in pygame.sprite.spritecollide(player, enemies, False):
-                    player.take_damage(10)
-                    damage_cooldown = 30  # Set cooldown to half a second (30 frames)
-            else:
-                damage_cooldown -= 1
+            # Add this block for player-enemy collision
+            for enemy in pygame.sprite.spritecollide(player, enemies, False):
+                player.take_damage(1)  # Assume each enemy deals 1 damage per frame
+                if player.hp <= 0:
+                    running = False  # End the game if player's HP reaches 0
 
             # Collect gems
             for gem in pygame.sprite.spritecollide(player, gems, True):
@@ -113,7 +124,7 @@ def main():
                     upgrade_options = get_random_upgrade(player)
 
             # Draw
-            screen.fill(BLACK)
+            screen.fill((0, 0, 0))  # Black background
             screen.blit(player.image, player.rect)
             for weapon in player.weapons:
                 if isinstance(weapon, Garlic):
@@ -133,6 +144,7 @@ def main():
             running = False
 
     pygame.quit()
-
 if __name__ == "__main__":
     main()
+    
+
