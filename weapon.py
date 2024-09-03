@@ -7,33 +7,46 @@ class Weapon:
     def __init__(self, name, level):
         self.name = name
         self.level = level
-        self.cooldown = 30  # Default cooldown, can be overridden in subclasses
+        self.cooldown = 30
         self.current_cooldown = 0
 
     def level_up(self):
         self.level += 1
 
-    def attack(self, x, y, projectiles):
+    def attack(self, x, y, projectiles, player_direction):
         if self.current_cooldown <= 0:
-            self._perform_attack(x, y, projectiles)
+            self._perform_attack(x, y, projectiles, player_direction)
             self.current_cooldown = self.cooldown
         else:
             self.current_cooldown -= 1
 
-    def _perform_attack(self, x, y, projectiles):
-        pass  # To be implemented by subclasses
+    def _perform_attack(self, x, y, projectiles, player_direction):
+        pass
 
 class Knife(Weapon):
     def __init__(self, name, level):
         super().__init__(name, level)
-        self.cooldown = 15  # Faster cooldown for knife
+        self.cooldown = 90
+        self.projectile_speed = 10
+        self.amount = 1
 
-    def _perform_attack(self, x, y, projectiles):
-        for angle in range(-30, 31, 60):  # Shoot 3 knives in a spread
-            rad = math.radians(angle)
-            dx = math.cos(rad)
-            dy = math.sin(rad)
-            projectiles.add(Projectile(x, y, dx, dy))
+    def level_up(self):
+        super().level_up()
+        if self.level % 2 == 0:
+            self.amount += 1  # Increase amount every 2 levels
+        self.cooldown = max(30, self.cooldown - 10)  # Decrease cooldown, minimum 30
+
+    def _perform_attack(self, x, y, projectiles, player_direction):
+        dx, dy = player_direction
+        direction = pygame.math.Vector2(dx, dy)
+        if direction.length() == 0:
+            direction = pygame.math.Vector2(1, 0)
+        direction = direction.normalize()
+
+        for i in range(self.amount):
+            offset = i * 10
+            projectiles.add(Projectile(x + offset * direction.y, y - offset * direction.x, 
+                                       direction.x, direction.y, speed=self.projectile_speed))
 
 class Axe(Weapon):
     def _perform_attack(self, x, y, projectiles):

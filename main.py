@@ -89,12 +89,12 @@ def main():
                 spawn_enemy(enemies)
                 spawn_timer = 0
 
-            # Weapon attacks
+            # Update weapon attacks
             for weapon in player.weapons:
                 if isinstance(weapon, Garlic):
                     weapon.attack(player.rect.centerx, player.rect.centery, projectiles, enemies)
                 else:
-                    weapon.attack(player.rect.centerx, player.rect.centery, projectiles)
+                    weapon.attack(player.rect.centerx, player.rect.centery, projectiles, (dx, dy))
 
             # Update
             enemies.update(player, enemies)
