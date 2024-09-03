@@ -6,6 +6,9 @@ from gem import Gem
 from weapon import Weapon, Knife, Axe, Fireball, Garlic
 from powerup import SpeedBoost, ArmorBoost, MagnetBoost
 from ui import UI
+
+# Add this new import
+import math
 from powerup import SpeedBoost, ArmorBoost, MagnetBoost
 from ui import UI
 
@@ -19,6 +22,17 @@ pygame.display.set_caption("Vampire Survivors Clone")
 
 # Colors
 BLACK = (0, 0, 0)
+
+def create_background(tile_image, screen_width, screen_height):
+    background = pygame.Surface((screen_width, screen_height))
+    tile_width, tile_height = tile_image.get_size()
+    
+    for x in range(0, screen_width, tile_width):
+        for y in range(0, screen_height, tile_height):
+            background.blit(tile_image, (x, y))
+    
+    return background
+
 
 def get_random_upgrade(player):
     all_upgrades = [
@@ -57,6 +71,10 @@ def main():
     projectiles = pygame.sprite.Group()
     gems = pygame.sprite.Group()
     ui = UI()
+    
+    # Load and create the tiled background
+    grass_tile = pygame.image.load("grass.png").convert()
+    background = create_background(grass_tile, WIDTH, HEIGHT)
     
     game_time = 0
     spawn_timer = 0
@@ -126,7 +144,7 @@ def main():
                     upgrade_options = get_random_upgrade(player)
 
             # Draw
-            screen.fill((0, 0, 0))  # Black background
+            screen.blit(background, (0, 0))  # Draw the background first
             screen.blit(player.image, player.rect)
             for weapon in player.weapons:
                 if isinstance(weapon, Garlic):
@@ -159,3 +177,4 @@ class Enemy(pygame.sprite.Sprite):
 
     def set_hp(self, base_hp):
         self.hp = base_hp
+
