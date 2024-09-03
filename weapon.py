@@ -45,7 +45,7 @@ class Knife(Weapon):
                                        direction.x, direction.y, speed=self.projectile_speed))
 
 class Axe(Weapon):
-    def _perform_attack(self, x, y, projectiles):
+    def _perform_attack(self, x, y, projectiles,player):
         for _ in range(self.level):
             angle = math.radians(random.randint(0, 360))
             dx = math.cos(angle)
@@ -53,7 +53,7 @@ class Axe(Weapon):
             projectiles.add(Projectile(x, y, dx, dy, speed=5))
 
 class Fireball(Weapon):
-    def _perform_attack(self, x, y, projectiles):
+    def _perform_attack(self, x, y, projectiles,player):
         for _ in range(self.level):
             angle = math.radians(random.randint(0, 360))
             dx = math.cos(angle)

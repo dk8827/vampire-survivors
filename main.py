@@ -128,7 +128,7 @@ def main():
                         gems.add(Gem(enemy.rect.centerx, enemy.rect.centery))
                     enemy.kill()
 
-            # Add this block for player-enemy collision
+            #Add
             for enemy in pygame.sprite.spritecollide(player, enemies, False):
                 player.take_damage(1)  # Assume each enemy deals 1 damage per frame
                 if player.hp <= 0:
