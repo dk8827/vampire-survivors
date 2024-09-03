@@ -33,7 +33,8 @@ def get_random_upgrade(player):
     return random.sample([u for u in all_upgrades if not any(w.name == u.name for w in player.weapons + player.powerups)], 3)
 def spawn_enemy(enemies, game_time):
     base_hp = 1 + int(game_time / 60)  # Increase HP every minute
-    new_enemy = Enemy(base_hp)
+    new_enemy = Enemy()
+    new_enemy.set_hp(base_hp)
     collision = True
     attempts = 0
     while collision and attempts < 100:
@@ -149,3 +150,12 @@ if __name__ == "__main__":
     main()
     
 
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        # ... other initialization code ...
+        self.hp = 1  # Start with 1 HP
+
+    def set_hp(self, base_hp):
+        self.hp = base_hp

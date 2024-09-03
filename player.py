@@ -4,10 +4,12 @@ from weapon import Knife
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.Surface((30, 30))
-        self.image.fill((255, 255, 255))
+        self.original_image = pygame.image.load("player.png").convert_alpha()
+        self.original_image = pygame.transform.scale(self.original_image, (40, 40))
+        self.image = self.original_image
         self.rect = self.image.get_rect()
         self.rect.center = (400, 300)
+        # ... rest of the initialization code ...
         self.speed = 5
         self.experience = 0
         self.level = 1
@@ -16,6 +18,7 @@ class Player(pygame.sprite.Sprite):
         self.max_hp = 100
         self.hp = self.max_hp
         self.last_direction = pygame.math.Vector2(1, 0)  # Default to right
+        self.facing_right = True
 
     def move(self, dx, dy):
         self.rect.x += dx * self.speed
@@ -23,6 +26,21 @@ class Player(pygame.sprite.Sprite):
         self.rect.clamp_ip(pygame.display.get_surface().get_rect())
         if dx != 0 or dy != 0:
             self.last_direction = pygame.math.Vector2(dx, dy).normalize()
+        
+        # Store the center before flipping
+        center = self.rect.center
+        
+        # Flip the image based on movement direction
+        if dx < 0 and self.facing_right:
+            self.image = pygame.transform.flip(self.original_image, True, False)
+            self.facing_right = False
+        elif dx > 0 and not self.facing_right:
+            self.image = self.original_image
+            self.facing_right = True
+        
+        # Reset the rect and restore the center
+        self.rect = self.image.get_rect()
+        self.rect.center = center    
     def level_up(self):
         self.level += 1
         self.speed += 0.2

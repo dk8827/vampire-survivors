@@ -26,7 +26,7 @@ class Weapon:
 class Knife(Weapon):
     def __init__(self, name, level):
         super().__init__(name, level)
-        self.cooldown = 90
+        self.cooldown = 45
         self.projectile_speed = 10
         self.amount = 1
 
@@ -34,7 +34,7 @@ class Knife(Weapon):
         super().level_up()
         if self.level % 2 == 0:
             self.amount += 1  # Increase amount every 2 levels
-        self.cooldown = max(30, self.cooldown - 10)  # Decrease cooldown, minimum 30
+        self.cooldown = max(30, self.cooldown - 5)  # Decrease cooldown, minimum 30
 
     def _perform_attack(self, x, y, projectiles, player):
         direction = player.last_direction
